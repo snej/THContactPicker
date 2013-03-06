@@ -27,6 +27,7 @@
 @property (nonatomic, assign) CGFloat viewPadding;
 @property (nonatomic, strong) UIFont *font;
 
+- (void)selectTextView;
 - (void)addContact:(id)contact withName:(NSString *)name;
 - (void)removeContact:(id)contact;
 - (void)setPlaceholderString:(NSString *)placeholderString;

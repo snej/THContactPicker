@@ -22,33 +22,23 @@
     if (self) {
         // Custom initialization
         self.title = @"Contacts";
-        self.contacts = [NSArray arrayWithObjects:@"Tristan Himmelman", @"John Himmelman", @"Nicole Robertson", @"Nicholas Barss", @"Andrew Sarasin", @"Mike Slon", @"Eric Salpeter", nil];
+        self.contacts = [NSArray array];
         self.selectedContacts = [NSMutableArray array];
         self.filteredContacts = self.contacts;
     }
     return self;
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
-    
-    // Initialize and add Contact Picker View
-    self.contactPickerView = [[THContactPickerView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 100)];
-    self.contactPickerView.delegate = self;
-    [self.contactPickerView setPlaceholderString:@"Who are you with?"];
-    [self.view addSubview:self.contactPickerView];
-    
-    // Fill the rest of the view with the table view 
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, self.contactPickerView.frame.size.height, self.view.frame.size.width, self.view.frame.size.height - self.contactPickerView.frame.size.height - kKeyboardHeight) style:UITableViewStylePlain];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    [self.view insertSubview:self.tableView belowSubview:self.contactPickerView];
+- (void)viewWillAppear:(BOOL)animated {
+    self.filteredContacts = self.contacts;
+    [super viewWillAppear: animated];
+    self.contactPickerView.placeholderString = @"Select contacts";
+    [self adjustTableViewFrame];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [self adjustTableViewFrame];
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear: animated];
+    [self.contactPickerView selectTextView];
 }
 
 - (void)didReceiveMemoryWarning
@@ -59,9 +49,25 @@
 
 - (void)adjustTableViewFrame {
     CGRect frame = self.tableView.frame;
-    frame.origin.y = self.contactPickerView.frame.size.height;
-    frame.size.height = self.view.frame.size.height - self.contactPickerView.frame.size.height - kKeyboardHeight;
+    frame.origin.y = CGRectGetMaxY(self.contactPickerView.frame) + 1;
+    frame.size.height = CGRectGetMaxY(self.view.bounds) - kKeyboardHeight - frame.origin.y;
     self.tableView.frame = frame;
+}
+
+- (UITableViewCell*) cellForContact: (NSString*)contact {
+    NSUInteger index = [self.filteredContacts indexOfObject: contact];
+    if (index == NSNotFound)
+        return nil;
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow: index inSection: 0];
+    return [self.tableView cellForRowAtIndexPath:indexPath];
+}
+
+- (void) selectContact: (NSString*)contact {
+    if ([self.selectedContacts containsObject:contact])
+        return;
+    [self cellForContact: contact].accessoryType = UITableViewCellAccessoryCheckmark;
+    [self.selectedContacts addObject:contact];
+    [self.contactPickerView addContact:contact withName:contact];
 }
 
 #pragma mark - UITableView Delegate and Datasource functions
@@ -104,10 +110,7 @@
         [self.selectedContacts removeObject:user];
         [self.contactPickerView removeContact:user];
     } else {
-        // Contact has not been selected, add it to THContactPickerView
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        [self.selectedContacts addObject:user];
-        [self.contactPickerView addContact:user withName:user];
+        [self selectContact: user];
     }
     
     self.filteredContacts = self.contacts;

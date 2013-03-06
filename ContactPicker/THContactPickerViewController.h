@@ -11,10 +11,12 @@
 
 @interface THContactPickerViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, THContactPickerDelegate>
 
-@property (nonatomic, strong) THContactPickerView *contactPickerView;
-@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) IBOutlet THContactPickerView *contactPickerView;
+@property (nonatomic, strong) IBOutlet UITableView *tableView;
 @property (nonatomic, strong) NSArray *contacts;
 @property (nonatomic, strong) NSMutableArray *selectedContacts;
 @property (nonatomic, strong) NSArray *filteredContacts;
+
+- (void) selectContact: (NSString*)contact;
 
 @end

@@ -31,28 +31,19 @@
 #define kHorizontalPadding 2 // the amount of padding to the left and right of each contact bubble
 #define kVerticalPadding 4 // amount of padding above and below each contact bubble
 #define kTextViewMinWidth 130
-
-- (id)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self){
-        [self setup];
-    }
-    return self;
-}
+#define kMaxLines 3
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code        
-        [self setup];
+        [self awakeFromNib];
     }
     return self;
 }
 
-- (void)setup {
-    self.viewPadding = kViewPadding;
-    
+- (void) awakeFromNib {
     self.contacts = [NSMutableDictionary dictionary];
     self.contactKeys = [NSMutableArray array];
     
@@ -74,8 +65,8 @@
     self.textView.contentInset = UIEdgeInsetsMake(-11, -6, 0, 0);
     self.textView.scrollEnabled = NO;
     self.textView.scrollsToTop = NO;
-    [self.textView becomeFirstResponder];
-    
+    self.textView.autocorrectionType = UITextAutocorrectionTypeNo;
+
     // Add shadow to bottom border
     self.backgroundColor = [UIColor whiteColor];
     CALayer *layer = [self layer];
@@ -90,7 +81,10 @@
     self.placeholderLabel.textColor = [UIColor grayColor];
     self.placeholderLabel.backgroundColor = [UIColor clearColor];
     [self addSubview:self.placeholderLabel];
-    
+
+    // Lay out the view
+    self.viewPadding = kViewPadding;
+
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture)];
     tapGesture.numberOfTapsRequired = 1;
     tapGesture.numberOfTouchesRequired = 1;
@@ -309,7 +303,7 @@
     
     // Adjust scroll view content size
     CGRect frame = self.bounds;
-    CGFloat maxFrameHeight = 2 * self.lineHeight + 2 * self.viewPadding; // limit frame to two lines of content
+    CGFloat maxFrameHeight = kMaxLines * self.lineHeight + 2 * self.viewPadding; // limit frame height
     CGFloat newHeight = (lineCount + 1) * self.lineHeight + 2 * self.viewPadding;
     self.scrollView.contentSize = CGSizeMake(self.frame.size.width, newHeight);
 

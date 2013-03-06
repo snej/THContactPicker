@@ -22,10 +22,7 @@
 #define kColorSelectedBorder [UIColor colorWithRed:56.0/255.0 green:0/255.0 blue:233.0/255.0 alpha:1.0]
 
 - (id)initWithName:(NSString *)name {
-    if ([self initWithName:name color:nil selectedColor:nil]) {
-
-    }
-    return self;
+    return [self initWithName:name color:nil selectedColor:nil];
 }
 
 - (id)initWithName:(NSString *)name
