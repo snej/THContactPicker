@@ -54,7 +54,7 @@
     self.tableView.frame = frame;
 }
 
-- (UITableViewCell*) cellForContact: (NSString*)contact {
+- (UITableViewCell*) cellForContact: (id<THContact>)contact {
     NSUInteger index = [self.filteredContacts indexOfObject: contact];
     if (index == NSNotFound)
         return nil;
@@ -62,12 +62,13 @@
     return [self.tableView cellForRowAtIndexPath:indexPath];
 }
 
-- (void) selectContact: (NSString*)contact {
+- (void) selectContact: (id<THContact>)contact {
     if ([self.selectedContacts containsObject:contact])
         return;
     [self cellForContact: contact].accessoryType = UITableViewCellAccessoryCheckmark;
     [self.selectedContacts addObject:contact];
-    [self.contactPickerView addContact:contact withName:contact];
+    id key = [NSValue valueWithPointer: (__bridge const void *)(contact)];
+    [self.contactPickerView addContact: key withName:contact.displayName];
 }
 
 #pragma mark - UITableView Delegate and Datasource functions
@@ -85,11 +86,22 @@
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil){
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
+                                      reuseIdentifier:cellIdentifier];
     }
-    cell.textLabel.text = [self.filteredContacts objectAtIndex:indexPath.row];
-    
-    if ([self.selectedContacts containsObject:[self.filteredContacts objectAtIndex:indexPath.row]]){
+    id<THContact> contact = [self.filteredContacts objectAtIndex:indexPath.row];
+    cell.textLabel.text = contact.displayName;
+    if ([contact respondsToSelector: @selector(picture)]) {
+        UIImage* picture = contact.picture;
+        if (!picture)
+            picture = [UIImage imageNamed: @"missingAvatar.png"];   //TEMP
+        cell.imageView.image = picture;
+    }
+    if ([contact respondsToSelector: @selector(email)]) {
+        cell.detailTextLabel.text = contact.email;
+    }
+
+    if ([self.selectedContacts containsObject:contact]){
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
     } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
@@ -103,14 +115,15 @@
 
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     
-    NSString *user = [self.filteredContacts objectAtIndex:indexPath.row];
+    id<THContact> contact = [self.filteredContacts objectAtIndex:indexPath.row];
     
-    if ([self.selectedContacts containsObject:user]){ // contact is already selected so remove it from ContactPickerView
+    if ([self.selectedContacts containsObject:contact]){ // contact is already selected so remove it from ContactPickerView
         cell.accessoryType = UITableViewCellAccessoryNone;
-        [self.selectedContacts removeObject:user];
-        [self.contactPickerView removeContact:user];
+        [self.selectedContacts removeObject:contact];
+        id key = [NSValue valueWithPointer: (__bridge const void *)(contact)];
+        [self.contactPickerView removeContact:key];
     } else {
-        [self selectContact: user];
+        [self selectContact: contact];
     }
     
     self.filteredContacts = self.contacts;
@@ -133,7 +146,8 @@
     [self adjustTableViewFrame];
 }
 
-- (void)contactPickerDidRemoveContact:(id)contact {
+- (void)contactPickerDidRemoveContact:(id)key {
+    id<THContact> contact = [key pointerValue];
     [self.selectedContacts removeObject:contact];
 
     int index = [self.contacts indexOfObject:contact];

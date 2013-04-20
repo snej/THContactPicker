@@ -9,6 +9,13 @@
 #import <UIKit/UIKit.h>
 #import "THContactPickerView.h"
 
+@protocol THContact <NSObject>
+@property (readonly) NSString* displayName;
+@optional
+@property (readonly) UIImage* picture;
+@property (readonly) NSString* email;
+@end
+
 @interface THContactPickerViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, THContactPickerDelegate>
 
 @property (nonatomic, strong) IBOutlet THContactPickerView *contactPickerView;
@@ -17,6 +24,6 @@
 @property (nonatomic, strong) NSMutableArray *selectedContacts;
 @property (nonatomic, strong) NSArray *filteredContacts;
 
-- (void) selectContact: (NSString*)contact;
+- (void) selectContact: (id<THContact>)contact;
 
 @end
