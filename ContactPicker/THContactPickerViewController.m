@@ -150,7 +150,7 @@
     id<THContact> contact = [key pointerValue];
     [self.selectedContacts removeObject:contact];
 
-    int index = [self.contacts indexOfObject:contact];
+    NSInteger index = [self.contacts indexOfObject:contact];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
     cell.accessoryType = UITableViewCellAccessoryNone;
 }
